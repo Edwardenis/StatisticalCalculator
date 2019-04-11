@@ -58,7 +58,7 @@
 
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link " id="home-tab" data-toggle="tab" href="#tablaFrecuencia" role="tab"
+                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#tablaFrecuencia" role="tab"
                         aria-controls="tablaFrecuencia" aria-selected="true">Tabla de Frecuencia</a>
                 </li>
                 <li class="nav-item">
@@ -70,12 +70,8 @@
                         aria-controls="tabProbabilidadBin" aria-selected="false">Probabilidad Binomial</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#tabProbabilidadPoi" role="tab"
+                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabProbabilidadPoi" role="tab"
                         aria-controls="tabProbabilidadPoi" aria-selected="false">Probabilidad de Poisson</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabMedidas" role="tab"
-                        aria-controls="tabMedidas" aria-selected="false">Medidas Descriptivas e Inferencial</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabIntervalos" role="tab"
@@ -83,11 +79,31 @@
                 </li>
             </ul>
             <div class="tab-content" id="myTabContent">
-                <div class="tab-pane fade " id="tablaFrecuencia" role="tabpanel" aria-labelledby="home-tab">
+                <div class="tab-pane fade show active" id="tablaFrecuencia" role="tabpanel" aria-labelledby="home-tab">
                     <h1>Calculadora de distribuci&oacute;n de frecuencias</h1>
 
                     <div class="form-row">
-                        <div class="col">
+                        <div class="col-2">
+                            <div class="form-group">
+                                <label>Tipo de entrada</label>
+                                <br />
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" v-model="tipoEntrada" name="radiosTipoEntrada"
+                                        id="radioManual" value="manual">
+                                    <label class="form-check-label" for="radioManual">Manual</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" v-model="tipoEntrada" name="radiosTipoEntrada"
+                                        id="radioExcel" value="excel">
+                                    <label class="form-check-label" for="radioExcel">Excel</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col" v-show="isTipoEntradaManual" >
+                                <label for="txtAreaMedidad">Introducir datos separados por (,) o (;):</label>
+                                <textarea v-model="textArea" class="form-control" id="txtAreaMedidad" rows="3"></textarea>
+                        </div>
+                        <div class="col" v-show="!isTipoEntradaManual">
                             <div class="form-group">
                                 <label for="fileInput">Selecciona un archivo de excel</label>
                                 <input id="fileInput" class="form-control-file" type="file" accept=".xlsx,.xls"
@@ -120,26 +136,64 @@
                             <button type="button" @click="generar" class="btn btn-primary">Generar</button>
                         </div>
                     </div>
-                    <table class="fullborder" v-if="media > 0">
-                        <tbody>
-                            <tr>
-                                <th>N. de Datos: </th>
-                                <td>{{numeroRegistros}}</td>
-                            </tr>
-                            <tr>
-                                <th>Valor m&iacute;nimo: </th>
-                                <td>{{valorMin}}</td>
-                            </tr>
-                            <tr>
-                                <th>Valor m&aacute;ximo: </th>
-                                <td>{{valorMax}}</td>
-                            </tr>
-                            <tr>
-                                <th>Media Aritmetica: </th>
-                                <td>{{media.toFixed(2)}}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="row">
+                        <div class="col">
+                            <h3>Medidas de Centralizaci&oacute;n</h3>
+                            <table class="fullborder" v-if="media > 0">
+                                <tbody>
+                                    <tr>
+                                        <th>N. de Datos: </th>
+                                        <td>{{numeroRegistros}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Mediana: </th>
+                                        <td>{{mediana}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Valor m&iacute;nimo: </th>
+                                        <td>{{valorMin}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Valor m&aacute;ximo: </th>
+                                        <td>{{valorMax}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Moda: </th>
+                                        <td>{{moda}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Media Aritmetica: </th>
+                                        <td>{{media.toFixed(2)}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col">
+                                <h3>Medidas de Dispersi&oacute;n</h3>
+                                <table class="fullborder" v-if="media > 0">
+                                    <tbody>
+                                        <tr>
+                                            <th>Varianza (S^2): </th>
+                                            <td>{{varianza.toFixed(2)}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Desviaci&oacute;n Estandar (S): </th>
+                                            <td>{{desviacionEstandar.toFixed(2)}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Rango Muestral (Re): </th>
+                                            <td>{{rangoMuestral}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Coeficiente de Variaci&oacute;n (CV): </th>
+                                            <td>{{(coeficienteVariacion * 100).toFixed(2)}} %</td>
+                                        </tr>
+                                       
+                                    </tbody>
+                                </table>
+                            </div>
+                    </div>
+                    
                     <table class="table" style="margin-bottom: 10px;">
                         <thead>
                             <th v-if="!isDatosNoAgrupados">Intervalo</th>
@@ -239,7 +293,7 @@
                     </div>
 
                 </div>
-                <div class="tab-pane fade show active" id="tabProbabilidadPoi" role="tabpanel" aria-labelledby="profile-tab">
+                <div class="tab-pane fade" id="tabProbabilidadPoi" role="tabpanel" aria-labelledby="profile-tab">
                     <h1>Calculadora de probabilidades de Poisson</h1>
                     <div class="form-row">
                         <div class="col-4" >
@@ -265,36 +319,6 @@
                         
                         
                     </div>
-                </div>
-                <div class="tab-pane fade" id="tabMedidas" role="tabpanel" aria-labelledby="profile-tab">
-                    <h1>Calculadora de probabilidades binomiales</h1>
-                    <div class="form-row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="fileInput2">Selecciona un archivo de excel</label>
-                                <input id="fileInput2" class="form-control-file" type="file" accept=".xlsx,.xls"
-                                    v-on:change="onInputProbabilidadChange" />
-                            </div>
-                        </div>
-                        <div class="col">
-                            <button type="button" @click="generarProbabilidad" class="btn btn-primary">Generar</button>
-                        </div>
-                    </div>
-                    <table class="table">
-                        <thead>
-                            <th>X</th>
-                            <th>P(x)</th>
-                            <th>P(x) %</th>
-                        </thead>
-                        <tbody>
-                            <tr v-for="obj in tableProbabilidad">
-                                <td>{{obj.x}}</td>
-                                <td>{{obj.probabilidad}}</td>
-                                <td>{{(obj.probabilidad*100).toFixed(2)}} %</td>
-                            </tr>
-
-                        </tbody>
-                    </table>
                 </div>
                 <div class="tab-pane fade" id="tabIntervalos" role="tabpanel" aria-labelledby="profile-tab">
                     <h1>Calculadora de probabilidades binomiales</h1>
@@ -338,12 +362,14 @@
         var app = new Vue({
             el: '#mainContainer',
             data: {
+                textArea: "",
                 tableObject: [],
                 tableProbabilidad: [],
                 valorMin: 0,
                 valorMax: 0,
                 numeroRegistros: 0,
                 selectedRadio: "nogrp",
+                tipoEntrada: "manual",
                 fileReader: new FileReader(),
                 fileReaderProbabilidad: new FileReader(),
                 selectedFile: null,
@@ -359,16 +385,7 @@
                 tabPoi: {
                     media: 0,
                     numeroOcurrencia:0,
-                }
-            },
-            mounted: function () {
-                var input = document.getElementById("fileInput");
-                var input = document.getElementById("fileInput2");
-                //Cuando el valor del Input cambie
-                this.fileReader.onload = this.onFileReaderLoad;
-                this.fileReaderProbabilidad.onload = this.onFileProbabilidadReaderLoad;
-                this.tableObject = [];
-                this.tableProbabilidad = [];
+                },
             },
             watch: {
                 selectedRadio: function (val) {
@@ -405,7 +422,103 @@
                     var xFactorial = math.permutations(this.tabPoi.numeroOcurrencia);
                     var formula = (mediaAlaX*eulerAlaMenosMedia)/xFactorial;
                     return formula;
+                },
+                isTipoEntradaManual: function() {
+                    return this.tipoEntrada == "manual";
+                },
+                mediana: function() {
+                    //si no hay registros, retornar 0
+                    if (!this.numeroRegistros)
+                        return 0;
+
+                    var medianaSimple = 0;
+                    //si es numero par
+                    if (this.numeroRegistros % 2 == 0) {
+                        medianaSimple =  this.numeroRegistros / 2;
+                    } else {
+                        medianaSimple =  (this.numeroRegistros +1) / 2;
+                    }
+
+                    if (this.isDatosNoAgrupados) 
+                        return medianaSimple;
+
+                    var claseObject = this.tableObject.filter((value, index, array) => {
+                        //si es el ultimo elemento
+                        if (index == array.length -1)
+                            return value.frecuenciaAbsAcomu == medianaSimple;
+
+                        return value.frecuenciaAbsAcomu <= medianaSimple
+                                && array[index+1].frecuenciaAbsAcomu > medianaSimple;
+                    })[0];
+                    var index = this.tableObject.indexOf(claseObject);
+                    var claseObjAnterior = this.tableObject[index-1];
+                    var frecuencaAcumuladaAnterior = claseObjAnterior ? claseObjAnterior.frecuenciaAbsAcomu : 0;
+                    var amplitudClase = claseObject.limSup - claseObject.limInf;
+                    var formula = claseObject.limInf + ((medianaSimple-frecuencaAcumuladaAnterior)/claseObject.frecuenciaAbs)*amplitudClase;
+
+                    return formula;
+                },
+                moda: function() {
+                    if (this.numeroRegistros == 0)
+                        return 0;
+
+                    var arrayDescentende = this.tableObject.filter(() => true).sort((a, b) => {
+                            return b.frecuenciaAbs - a.frecuenciaAbs;
+                        });
+                    
+                    var claseMayorFrecuencia = arrayDescentende[0];
+                    if (this.isDatosNoAgrupados) {
+                        var clasesModa = arrayDescentende.filter((x) => x.frecuenciaAbs == claseMayorFrecuencia.frecuenciaAbs);
+                        var modaCompose = clasesModa.map((x) => x.clase).join(",");
+                        return modaCompose;
+                    }                    
+                    var index = this.tableObject.indexOf(claseMayorFrecuencia);
+                    var claseAnterior = this.tableObject[index - 1];
+                    var clasePosterior = this.tableObject[index + 1];
+                    var amplitudClase = claseMayorFrecuencia.limSup - claseMayorFrecuencia.limInf;
+                    var formula = claseMayorFrecuencia.limInf + 
+                                ((claseMayorFrecuencia.frecuenciaAbs- claseAnterior.frecuenciaAbs)
+                                    / ((claseMayorFrecuencia.frecuenciaAbs - claseAnterior.frecuenciaAbs)+(claseMayorFrecuencia.frecuenciaAbs - clasePosterior.frecuenciaAbs)))
+                                * amplitudClase;
+
+                    return formula;
+                },
+                varianza: function() {
+                    if (this.numeroRegistros == 0)
+                        return 0;
+                    
+                    var sumatoria = 0;
+                    this.tableObject.forEach((claseObj) => {
+                        var x = 0;
+                        if (this.isDatosNoAgrupados)
+                            x = claseObj.clase;
+                        else
+                            x = claseObj.marcaClase;
+                        
+                        var diff = x - this.media;
+                        sumatoria += Math.pow(diff,2) * claseObj.frecuenciaAbs;
+                    });
+
+                    return sumatoria / (this.numeroRegistros - 1);
+                },
+                desviacionEstandar: function() {
+                    return Math.sqrt(this.varianza);
+                },
+                rangoMuestral: function() {
+                    return this.valorMax - this.valorMin;
+                },
+                coeficienteVariacion: function() {
+                    return this.desviacionEstandar / Math.abs(this.media);
                 }
+            },
+            mounted: function () {
+                var input = document.getElementById("fileInput");
+                var input = document.getElementById("fileInput2");
+                //Cuando el valor del Input cambie
+                this.fileReader.onload = this.onFileReaderLoad;
+                this.fileReaderProbabilidad.onload = this.onFileProbabilidadReaderLoad;
+                this.tableObject = [];
+                this.tableProbabilidad = [];
             },
             methods: {
                 generarProbabilidad: function (evt) {
@@ -417,10 +530,37 @@
                 },
                 generar: function (evt) {
                     evt.preventDefault();
-                    if (!this.selectedFile)
+                    if (this.isTipoEntradaManual) {
+
+                        if (!this.textArea)
+                            alert("Debe llenar el area con datos.");
+
+                        if(this.textArea.indexOf(";") > -1)
+                            var datos = this.textArea.split(";");
+                        else
+                            var datos = this.textArea.split(",");
+
+                        this.generarTablaFrecuencia(datos);
+
+                    } else {
+                        if (!this.selectedFile)
                         alert("Debe seleccionar un archivo.");
 
-                    this.fileReader.readAsArrayBuffer(this.selectedFile);
+                        this.fileReader.readAsArrayBuffer(this.selectedFile);
+                    }
+                    
+
+                    
+                },
+                generarMedidas: function(evt) {
+                    evt.preventDefault();
+                    if (!this.tabMedidas.textArea)
+                        alert("Debe llenar el campo con datos.");
+
+                    var datos = this.tabMedidas.textArea.split(",");
+                    this.tabMedidas.datos = datos.sort((a,b) => {
+                        return (+a)-(+b);
+                    })
                 },
                 onInputProbabilidadChange(evt) {
                     //Obtenemos la informacion del archivo
@@ -460,10 +600,12 @@
                     this.tableProbabilidad = table;
                 },
                 onFileReaderLoad: function (e) {
-                    var self = this;
                     var orderedValues = this.getDataFromExcelFileReader(e);
+                    this.generarTablaFrecuencia(orderedValues);
+                },
+                generarTablaFrecuencia: function(datos) {
                     //Esto para ordenar de maner ascendentes conviirtiendo los string en numeros y luego ordenandolos
-                    orderedValues = orderedValues.sort(function (a, b) {
+                    var orderedValues = datos.sort(function (a, b) {
                         return (+a) - (+b);
                     });
                     this.numeroRegistros = orderedValues.length;
@@ -499,11 +641,10 @@
                     var frecuenciasRelv = [];
                     var colors=[];
                     if (!this.isDatosNoAgrupados) {
-                        debugger;
                         var numeroIntervalos = this.getNumeroIntervalos();
                         this.amplitudIntervalos = this.rango / numeroIntervalos;
                         //
-                        tableObject.forEach(function (value, index) {
+                        tableObject.forEach((value, index) => {
                             var clase = datosAgrupados.filter(function (x) {
                                 //si esta clase tiene intervalor abierto evaluar limSuperior en > que
                                 //De lo contrario si es cerrado debe ser >= que
@@ -516,7 +657,7 @@
                             if (clase) {
                                 clase.frecuenciaAbs += value.frecuenciaAbs
                             } else {
-                                var limiteSuperior = value.clase + self.amplitudIntervalos - 1;
+                                var limiteSuperior = (+value.clase) + this.amplitudIntervalos - 1;
                                 var isLimiteSuperiorDecimal = limiteSuperior % 1 != 0;
                                 //Si el limite superior es decimal, redondear hacia arriba
                                 if (isLimiteSuperiorDecimal) {
@@ -524,8 +665,8 @@
                                     limiteSuperior = nuevoLimiteSup;
                                 }
                                 var obj = {
-                                    limInf: value.clase,
-                                    limSup: limiteSuperior,
+                                    limInf: +value.clase,
+                                    limSup: +limiteSuperior,
                                     //El intervalo debe ser abierto si el limite superior es decimal
                                     intervaloAbierto: isLimiteSuperiorDecimal,
                                     frecuenciaAbs: value.frecuenciaAbs
@@ -545,14 +686,14 @@
                     tableObject = this.calcularFrecuenciaAbsoluta(tableObject);
                     tableObject = this.calcularFrecuenciasRelaivas(tableObject);
 
-                    tableObject.forEach(function(value) {
-                        if (self.isDatosNoAgrupados) {
+                    tableObject.forEach((value) => {
+                        if (this.isDatosNoAgrupados) {
                             labels.push(value.clase);
 
                         } else {
                             labels.push("["+value.limInf + ","+ value.limSup+"]");
                         }
-                        colors.push(self.getRandomColor());
+                        colors.push(this.getRandomColor());
                         frecuenciasRelv.push((value.frecuenciaRel *100).toFixed(2));
 
                     });
@@ -584,7 +725,6 @@
                             }
                         }
                     });
-
                 },
                 calcularFrecuenciaAbsoluta: function (tableData) {
                     for (var i = 0; i < tableData.length; i++) {
