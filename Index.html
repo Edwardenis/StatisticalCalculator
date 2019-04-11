@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+    <title>Simulador Tabla de frecuencias</title>
+</head>
+
+<body>
+    <button class="btn btn-primary float-right" onclick="copyToClipboard()">Copiar Fuente</button>
+    <script>
+        
+        function copyToClipboard() {
+            var scriptText = document.getElementById("vueScript").innerHTML;
+
+            const el = document.createElement('textarea');
+            el.value = window.myHtmlContent;
+            el.value += ("<script>" + scriptText + "<\/script>")
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            alert("Codigo copiado");
+        }
+    </script>
+    <div id="copyableContent">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+            integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css" />
+        <style>
+            .fullborder,.fullborder th,.fullborder td {
+                        border: 1px solid black;
+                    }
+                    .fullborder {
+                        margin-bottom: 10px;
+                    }
+                    #mainContainer {
+                        padding: 10px;
+                    }
+                </style>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.14.1/xlsx.full.min.js"></script>
+
+
+
+
+        <section id="mainContainer">
+
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#tablaFrecuencia" role="tab"
+                        aria-controls="tablaFrecuencia" aria-selected="true">Tabla de Frecuencia</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tablaProbabilidades" role="tab"
+                        aria-controls="tablaProbabilidades" aria-selected="false">Tabla de Probabilidades</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabProbabilidadBin" role="tab"
+                        aria-controls="tabProbabilidadBin" aria-selected="false">Probabilidad Binomial</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabProbabilidadPoi" role="tab"
+                        aria-controls="tabProbabilidadPoi" aria-selected="false">Probabilidad de Poisson</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabMedidas" role="tab"
+                        aria-controls="tabMedidas" aria-selected="false">Medidas Descriptivas e Inferencial</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabIntervalos" role="tab"
+                        aria-controls="tabIntervalos" aria-selected="false">Intervalos de confianza</a>
+                </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="tablaFrecuencia" role="tabpanel" aria-labelledby="home-tab">
+                    <h1>Calculadora de distribuci&oacute;n de frecuencias</h1>
+
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="fileInput">Selecciona un archivo de excel</label>
+                                <input id="fileInput" class="form-control-file" type="file" accept=".xlsx,.xls"
+                                    v-on:change="onInputChange" />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label>Tipo de calculo</label>
+                                <br />
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" v-model="selectedRadio" name="radios"
+                                        id="radioNoGrp" value="nogrp">
+                                    <label class="form-check-label" for="radioNoGrp">Datos no agrupados</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" v-model="selectedRadio" name="radios"
+                                        id="radioGrp" value="grp">
+                                    <label class="form-check-label" for="radioGrp">Datos agrupados</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- <div class="col" >
+                                        <div class="form-group col-md-6">
+                                            <label for="inputEmail4">Rango</label>
+                                            <input type="number" class="form-control" id="inputEmail4" :disabled="isDatosNoAgrupados"  v-model="rango">
+                                        </div>
+                                    </div> -->
+                        <div class="col">
+                            <button type="button" @click="generar" class="btn btn-primary">Generar</button>
+                        </div>
+                    </div>
+                    <table class="fullborder" v-if="media > 0">
+                        <tbody>
+                            <tr>
+                                <th>N. de Datos: </th>
+                                <td>{{numeroRegistros}}</td>
+                            </tr>
+                            <tr>
+                                <th>Valor m&iacute;nimo: </th>
+                                <td>{{valorMin}}</td>
+                            </tr>
+                            <tr>
+                                <th>Valor m&aacute;ximo: </th>
+                                <td>{{valorMax}}</td>
+                            </tr>
+                            <tr>
+                                <th>Media Aritmetica: </th>
+                                <td>{{media.toFixed(2)}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table class="table" style="margin-bottom: 10px;">
+                        <thead>
+                            <th v-if="!isDatosNoAgrupados">Intervalo</th>
+                            <th v-if="isDatosNoAgrupados">Xi</th>
+                            <th v-if="!isDatosNoAgrupados">Marca de Clase (Xi)</th>
+                            <th>Frecuencia </th>
+                            <th>Frecuencia Acomulada</th>
+                            <th>Frecuencia Relativa</th>
+                            <th>Frecuencia Relativa Acomulada</th>
+                        </thead>
+                        <tbody>
+                            <tr v-for="x in tableObject">
+                                <td v-if="isDatosNoAgrupados">{{x.clase}}</td>
+                                <td v-if="!isDatosNoAgrupados">[{{x.limInf}}-{{x.limSup}}{{x.intervaloAbierto? ")" :
+                                    "]"}}</td>
+                                <td v-if="!isDatosNoAgrupados">{{x.marcaClase}}</td>
+                                <td>{{x.frecuenciaAbs}}</td>
+                                <td>{{x.frecuenciaAbsAcomu}}</td>
+                                <td>{{ parseFloat(x.frecuenciaRel * 100).toFixed(2)}} %</td>
+                                <td>{{parseFloat(x.frecuenciaRelAcomu * 100).toFixed(2)}} %</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                    <div  v-show="media > 0">
+                        
+                            <h3>Historial de frecuencia</h3>
+                            <br>
+                            <canvas id="myChart" style="max-width:800px;"></canvas>
+
+                        
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="tablaProbabilidades" role="tabpanel" aria-labelledby="profile-tab">
+                    <h1>Calculadora de distribuci&oacute;n de probabilidades</h1>
+                    <form>
+                        <div class="form-row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="fileInput2">Selecciona un archivo de excel</label>
+                                    <input id="fileInput2" class="form-control-file" type="file" accept=".xlsx,.xls"
+                                        v-on:change="onInputProbabilidadChange" />
+                                </div>
+                            </div>
+                            <div class="col">
+                                <button type="button" @click="generarProbabilidad" class="btn btn-primary">Generar</button>
+                            </div>
+                        </div>
+                    </form>
+                    <table class="table">
+                        <thead>
+                            <th>X</th>
+                            <th>P(x)</th>
+                            <th>P(x) %</th>
+                        </thead>
+                        <tbody>
+                            <tr v-for="obj in tableProbabilidad">
+                                <td>{{obj.x}}</td>
+                                <td>{{obj.probabilidad}}</td>
+                                <td>{{(obj.probabilidad*100).toFixed(2)}} %</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="tabProbabilidadBin" role="tabpanel" aria-labelledby="profile-tab">
+                    <h1>Calculadora de probabilidades binomiales</h1>
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="fileInput2">Selecciona un archivo de excel</label>
+                                <input id="fileInput2" class="form-control-file" type="file" accept=".xlsx,.xls"
+                                    v-on:change="onInputProbabilidadChange" />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <button type="button" @click="generarProbabilidad" class="btn btn-primary">Generar</button>
+                        </div>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <th>X</th>
+                            <th>P(x)</th>
+                            <th>P(x) %</th>
+                        </thead>
+                        <tbody>
+                            <tr v-for="obj in tableProbabilidad">
+                                <td>{{obj.x}}</td>
+                                <td>{{obj.probabilidad}}</td>
+                                <td>{{(obj.probabilidad*100).toFixed(2)}} %</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="tabProbabilidadPoi" role="tabpanel" aria-labelledby="profile-tab">
+                    <h1>Calculadora de probabilidades binomiales</h1>
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="fileInput2">Selecciona un archivo de excel</label>
+                                <input id="fileInput2" class="form-control-file" type="file" accept=".xlsx,.xls"
+                                    v-on:change="onInputProbabilidadChange" />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <button type="button" @click="generarProbabilidad" class="btn btn-primary">Generar</button>
+                        </div>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <th>X</th>
+                            <th>P(x)</th>
+                            <th>P(x) %</th>
+                        </thead>
+                        <tbody>
+                            <tr v-for="obj in tableProbabilidad">
+                                <td>{{obj.x}}</td>
+                                <td>{{obj.probabilidad}}</td>
+                                <td>{{(obj.probabilidad*100).toFixed(2)}} %</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="tabMedidas" role="tabpanel" aria-labelledby="profile-tab">
+                    <h1>Calculadora de probabilidades binomiales</h1>
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="fileInput2">Selecciona un archivo de excel</label>
+                                <input id="fileInput2" class="form-control-file" type="file" accept=".xlsx,.xls"
+                                    v-on:change="onInputProbabilidadChange" />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <button type="button" @click="generarProbabilidad" class="btn btn-primary">Generar</button>
+                        </div>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <th>X</th>
+                            <th>P(x)</th>
+                            <th>P(x) %</th>
+                        </thead>
+                        <tbody>
+                            <tr v-for="obj in tableProbabilidad">
+                                <td>{{obj.x}}</td>
+                                <td>{{obj.probabilidad}}</td>
+                                <td>{{(obj.probabilidad*100).toFixed(2)}} %</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="tabIntervalos" role="tabpanel" aria-labelledby="profile-tab">
+                    <h1>Calculadora de probabilidades binomiales</h1>
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="fileInput2">Selecciona un archivo de excel</label>
+                                <input id="fileInput2" class="form-control-file" type="file" accept=".xlsx,.xls"
+                                    v-on:change="onInputProbabilidadChange" />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <button type="button" @click="generarProbabilidad" class="btn btn-primary">Generar</button>
+                        </div>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <th>X</th>
+                            <th>P(x)</th>
+                            <th>P(x) %</th>
+                        </thead>
+                        <tbody>
+                            <tr v-for="obj in tableProbabilidad">
+                                <td>{{obj.x}}</td>
+                                <td>{{obj.probabilidad}}</td>
+                                <td>{{(obj.probabilidad*100).toFixed(2)}} %</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+    </div>
+    <script>
+        debugger;
+        window.myHtmlContent = document.getElementById("copyableContent").innerHTML;
+    </script>
+    <script id="vueScript" type="text/javascript">
+
+        var app = new Vue({
+            el: '#mainContainer',
+            data: {
+                tableObject: [],
+                tableProbabilidad: [],
+                valorMin: 0,
+                valorMax: 0,
+                numeroRegistros: 0,
+                selectedRadio: "nogrp",
+                fileReader: new FileReader(),
+                fileReaderProbabilidad: new FileReader(),
+                selectedFile: null,
+                selectedFileProbabilidad: null,
+                rango: null,
+                amplitudIntervalos: null,
+                grafico: {}
+            },
+            mounted: function () {
+                var input = document.getElementById("fileInput");
+                var input = document.getElementById("fileInput2");
+                //Cuando el valor del Input cambie
+                this.fileReader.onload = this.onFileReaderLoad;
+                this.fileReaderProbabilidad.onload = this.onFileProbabilidadReaderLoad;
+                this.tableObject = [];
+                this.tableProbabilidad = [];
+            },
+            watch: {
+                selectedRadio: function (val) {
+                    this.tableObject = [];
+                }
+            },
+            computed: {
+                // a computed getter
+                isDatosNoAgrupados: function () {
+                    return this.selectedRadio == 'nogrp';
+                },
+                media: function () {
+
+                    var suma = 0;
+                    for (var i = 0; i < this.tableObject.length; i++) {
+                        var claseObject = this.tableObject[i];
+                        suma += (claseObject.clase || claseObject.marcaClase) * claseObject.frecuenciaAbs;
+
+                    }
+                    return suma / this.numeroRegistros;
+                }
+            },
+            methods: {
+                generarProbabilidad: function (evt) {
+                    evt.preventDefault();
+                    if (!this.selectedFileProbabilidad)
+                        alert("Debe seleccionar un archivo.");
+
+                    this.fileReaderProbabilidad.readAsArrayBuffer(this.selectedFileProbabilidad);
+                },
+                generar: function (evt) {
+                    evt.preventDefault();
+                    if (!this.selectedFile)
+                        alert("Debe seleccionar un archivo.");
+
+                    this.fileReader.readAsArrayBuffer(this.selectedFile);
+                },
+                onInputProbabilidadChange(evt) {
+                    //Obtenemos la informacion del archivo
+                    var file = evt.target.files[0];
+                    this.selectedFileProbabilidad = file;
+                },
+                onInputChange: function (evt) {
+                    //Obtenemos la informacion del archivo
+                    var file = evt.target.files[0];
+                    this.selectedFile = file;
+                },
+                onFileProbabilidadReaderLoad: function (e) {
+                    var self = this;
+                    var orderedValues = this.getDataFromExcelFileReader(e);
+
+                    var table = [];
+                    var sumaTotal = 0;
+                    orderedValues.forEach(function (value) {
+                        var existeYaEnTabla = table.some((x) => {
+                            return x.clase == value;
+                        });
+
+                        if (existeYaEnTabla)
+                            return;
+
+                        var claseObject = {};
+                        claseObject.x = value;
+                        claseObject.probabilidad = 0;
+                        sumaTotal += value;
+                        table.push(claseObject);
+                    });
+
+                    table.forEach(function (obj) {
+                        obj.probabilidad = obj.x / sumaTotal;
+                    });
+
+                    this.tableProbabilidad = table;
+                },
+                onFileReaderLoad: function (e) {
+                    var self = this;
+                    var orderedValues = this.getDataFromExcelFileReader(e);
+                    //Esto para ordenar de maner ascendentes conviirtiendo los string en numeros y luego ordenandolos
+                    orderedValues = orderedValues.sort(function (a, b) {
+                        return (+a) - (+b);
+                    });
+                    this.numeroRegistros = orderedValues.length;
+                    this.valorMin = orderedValues[0];
+                    this.valorMax = orderedValues[orderedValues.length - 1];
+                    console.log(orderedValues);
+                    //
+                    var tableObject = [];
+                    this.rango = orderedValues[orderedValues.length - 1] - orderedValues[0];
+
+                    orderedValues.forEach(function (value) {
+                        var array = tableObject.filter((x) => {
+                            return x.clase == value;
+                        });
+                        var indexOfClase = tableObject.indexOf(array[0]);
+                        var claseObject = {};
+                        if (indexOfClase > -1) {
+                            //Si el indice es > -1 quiere decir que si se encuentra en el array
+                            //Por lo que obtendremos ese objeto y aumentaremos su frecuencia
+                            claseObject = tableObject[indexOfClase];
+                        } else {
+                            //de lo contrario crear objeto
+                            claseObject.clase = value;
+                            claseObject.frecuenciaAbs = 0;
+                            tableObject.push(claseObject);
+                        }
+                        claseObject.frecuenciaAbs++;
+
+                    });
+                    //
+                    var datosAgrupados = [];
+                    var labels = [];
+                    var frecuenciasRelv = [];
+                    var colors=[];
+                    if (!this.isDatosNoAgrupados) {
+                        debugger;
+                        var numeroIntervalos = this.getNumeroIntervalos();
+                        this.amplitudIntervalos = this.rango / numeroIntervalos;
+                        //
+                        tableObject.forEach(function (value, index) {
+                            var clase = datosAgrupados.filter(function (x) {
+                                //si esta clase tiene intervalor abierto evaluar limSuperior en > que
+                                //De lo contrario si es cerrado debe ser >= que
+                                if (x.intervaloAbierto)
+                                    return x.limInf <= value.clase && x.limSup > value.clase;
+                                else
+                                    return x.limInf <= value.clase && x.limSup > value.clase;
+                            })[0];
+
+                            if (clase) {
+                                clase.frecuenciaAbs += value.frecuenciaAbs
+                            } else {
+                                var limiteSuperior = value.clase + self.amplitudIntervalos - 1;
+                                var isLimiteSuperiorDecimal = limiteSuperior % 1 != 0;
+                                //Si el limite superior es decimal, redondear hacia arriba
+                                if (isLimiteSuperiorDecimal) {
+                                    var nuevoLimiteSup = tableObject[index + 1] ? tableObject[index + 1].clase : Math.ceil(limiteSuperior);
+                                    limiteSuperior = nuevoLimiteSup;
+                                }
+                                var obj = {
+                                    limInf: value.clase,
+                                    limSup: limiteSuperior,
+                                    //El intervalo debe ser abierto si el limite superior es decimal
+                                    intervaloAbierto: isLimiteSuperiorDecimal,
+                                    frecuenciaAbs: value.frecuenciaAbs
+                                };
+
+                                datosAgrupados.push(obj);
+                                
+                            }
+
+                        });
+
+                        tableObject = datosAgrupados;
+                        tableObject = this.calcularMarcaClase(tableObject);
+
+                    } 
+
+                    tableObject = this.calcularFrecuenciaAbsoluta(tableObject);
+                    tableObject = this.calcularFrecuenciasRelaivas(tableObject);
+
+                    tableObject.forEach(function(value) {
+                        if (self.isDatosNoAgrupados) {
+                            labels.push(value.clase);
+
+                        } else {
+                            labels.push("["+value.limInf + ","+ value.limSup+"]");
+                        }
+                        colors.push(self.getRandomColor());
+                        frecuenciasRelv.push((value.frecuenciaRel *100).toFixed(2));
+
+                    });
+                    this.tableObject = tableObject;
+
+                    var ctx = document.getElementById('myChart');
+                    if (this.grafico.destroy)
+                        this.grafico.destroy();
+
+                    this.grafico = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Frecuencias relativas',
+                                data: frecuenciasRelv,
+                                backgroundColor: colors,
+                                borderColor: colors,
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }]
+                            }
+                        }
+                    });
+
+                },
+                calcularFrecuenciaAbsoluta: function (tableData) {
+                    for (var i = 0; i < tableData.length; i++) {
+                        var claseObject = tableData[i];
+                        //si es el primer registro la frecuencia absoluta es igual a la frecuencia relativa
+                        if (i == 0) {
+                            claseObject.frecuenciaAbsAcomu = claseObject.frecuenciaAbs;
+                        } else {
+                            //de lo contrario
+                            claseObject.frecuenciaAbsAcomu = tableData[i - 1].frecuenciaAbsAcomu + claseObject.frecuenciaAbs;
+                        }
+                    }
+
+                    return tableData;
+                },
+                calcularFrecuenciasRelaivas: function (tableData) {
+                    for (var i = 0; i < tableData.length; i++) {
+                        var claseObject = tableData[i];
+                        claseObject.frecuenciaRel = (claseObject.frecuenciaAbs / this.numeroRegistros);
+
+                        if (i == 0) {
+                            claseObject.frecuenciaRelAcomu = claseObject.frecuenciaRel;
+                        } else {
+                            claseObject.frecuenciaRelAcomu = tableData[i - 1].frecuenciaRelAcomu + claseObject.frecuenciaRel;
+                        }
+                    }
+
+                    return tableData;
+                },
+                calcularMarcaClase: function (tableData) {
+                    for (var i = 0; i < tableData.length; i++) {
+                        var claseObject = tableData[i];
+                        claseObject.marcaClase = (claseObject.limInf + claseObject.limSup) / 2;
+                    }
+
+                    return tableData;
+                },
+                getNumeroIntervalos: function () {
+                    var formula = 1 + (3.332) * Math.log10(this.numeroRegistros);
+                    return Math.round(formula);
+                },
+                getDataFromExcelFileReader: function (evt) {
+                    var data = evt.target.result;
+                    data = new Uint8Array(data);
+                    var values = [];
+                    var workbook = XLSX.read(data, { type: 'array' });
+                    var sheetNameList = workbook.SheetNames;
+                    //push cell value to array
+                    var sheet = workbook.Sheets[sheetNameList[0]];
+                    for (var prop in sheet) {
+                        if (!sheet.hasOwnProperty(prop) || prop == "!margins" || prop == "!ref") continue;
+                        //
+                        var cellValue = sheet[prop].v;
+                        values.push(cellValue);
+
+                    }
+                    return values;
+                },
+                getRandomColor: function() {
+                    var letters = '0123456789ABCDEF'.split('');
+                    var color = '#';
+                    for (var i = 0; i < 6; i++) {
+                        color += letters[Math.floor(Math.random() * 16)];
+                    }
+                    return color;
+                }
+            }
+        });
+    </script>
+
+
+
+</body>
+
+</html>
