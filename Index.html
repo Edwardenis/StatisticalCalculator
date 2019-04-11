@@ -37,10 +37,14 @@
                     #mainContainer {
                         padding: 10px;
                     }
+                    #tabProbabilidadBin .textResult {
+                        margin-top: 70px;
+                    }
                 </style>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/5.9.0/math.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.14.1/xlsx.full.min.js"></script>
 
@@ -51,7 +55,7 @@
 
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#tablaFrecuencia" role="tab"
+                    <a class="nav-link " id="home-tab" data-toggle="tab" href="#tablaFrecuencia" role="tab"
                         aria-controls="tablaFrecuencia" aria-selected="true">Tabla de Frecuencia</a>
                 </li>
                 <li class="nav-item">
@@ -63,7 +67,7 @@
                         aria-controls="tabProbabilidadBin" aria-selected="false">Probabilidad Binomial</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabProbabilidadPoi" role="tab"
+                    <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#tabProbabilidadPoi" role="tab"
                         aria-controls="tabProbabilidadPoi" aria-selected="false">Probabilidad de Poisson</a>
                 </li>
                 <li class="nav-item">
@@ -76,7 +80,7 @@
                 </li>
             </ul>
             <div class="tab-content" id="myTabContent">
-                <div class="tab-pane fade show active" id="tablaFrecuencia" role="tabpanel" aria-labelledby="home-tab">
+                <div class="tab-pane fade " id="tablaFrecuencia" role="tabpanel" aria-labelledby="home-tab">
                     <h1>Calculadora de distribuci&oacute;n de frecuencias</h1>
 
                     <div class="form-row">
@@ -201,62 +205,69 @@
                 <div class="tab-pane fade" id="tabProbabilidadBin" role="tabpanel" aria-labelledby="profile-tab">
                     <h1>Calculadora de probabilidades binomiales</h1>
                     <div class="form-row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="fileInput2">Selecciona un archivo de excel</label>
-                                <input id="fileInput2" class="form-control-file" type="file" accept=".xlsx,.xls"
-                                    v-on:change="onInputProbabilidadChange" />
+                        <div class="col-4" >
+                            <div class="row">
+                                <div class="col-6" >
+                                    <div class="form-group">
+                                        <label for="inputExito">Probabilidad de exito:</label>
+                                        <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.probabilidadExito">
+                                    </div>
+                                </div>
+                                <div class="col-6" >
+                                    <div class="form-group">
+                                        <label for="inputExito">Tamaño de la muestra:</label>
+                                        <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.numeroMuestra">
+                                    </div>
+                                </div>
+                                <div class="col-6" >
+                                    <div class="form-group">
+                                        <label for="inputExito">N&uacute;mero de exitos:</label>
+                                        <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.numeroExitos">
+                                    </div>
+                                </div>
                             </div>
+                            
                         </div>
-                        <div class="col">
-                            <button type="button" @click="generarProbabilidad" class="btn btn-primary">Generar</button>
+                        <div class="col-8">
+                            <h2 class="textResult">P(x) = {{probabilidadBinomial}}</h2>
                         </div>
+                        
+                        
                     </div>
-                    <table class="table">
-                        <thead>
-                            <th>X</th>
-                            <th>P(x)</th>
-                            <th>P(x) %</th>
-                        </thead>
-                        <tbody>
-                            <tr v-for="obj in tableProbabilidad">
-                                <td>{{obj.x}}</td>
-                                <td>{{obj.probabilidad}}</td>
-                                <td>{{(obj.probabilidad*100).toFixed(2)}} %</td>
-                            </tr>
 
-                        </tbody>
-                    </table>
                 </div>
-                <div class="tab-pane fade" id="tabProbabilidadPoi" role="tabpanel" aria-labelledby="profile-tab">
+                <div class="tab-pane fade show active" id="tabProbabilidadPoi" role="tabpanel" aria-labelledby="profile-tab">
                     <h1>Calculadora de probabilidades binomiales</h1>
                     <div class="form-row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="fileInput2">Selecciona un archivo de excel</label>
-                                <input id="fileInput2" class="form-control-file" type="file" accept=".xlsx,.xls"
-                                    v-on:change="onInputProbabilidadChange" />
+                        <div class="col-4" >
+                            <div class="row">
+                                <div class="col-6" >
+                                    <div class="form-group">
+                                        <label for="inputExito">Probabilidad de exito:</label>
+                                        <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.probabilidadExito">
+                                    </div>
+                                </div>
+                                <div class="col-6" >
+                                    <div class="form-group">
+                                        <label for="inputExito">Tamaño de la muestra:</label>
+                                        <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.numeroMuestra">
+                                    </div>
+                                </div>
+                                <div class="col-6" >
+                                    <div class="form-group">
+                                        <label for="inputExito">N&uacute;mero de exitos:</label>
+                                        <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.numeroExitos">
+                                    </div>
+                                </div>
                             </div>
+                            
                         </div>
-                        <div class="col">
-                            <button type="button" @click="generarProbabilidad" class="btn btn-primary">Generar</button>
+                        <div class="col-8">
+                            <h2 class="textResult">P(x) = {{probabilidadBinomial}}</h2>
                         </div>
+                        
+                        
                     </div>
-                    <table class="table">
-                        <thead>
-                            <th>X</th>
-                            <th>P(x)</th>
-                            <th>P(x) %</th>
-                        </thead>
-                        <tbody>
-                            <tr v-for="obj in tableProbabilidad">
-                                <td>{{obj.x}}</td>
-                                <td>{{obj.probabilidad}}</td>
-                                <td>{{(obj.probabilidad*100).toFixed(2)}} %</td>
-                            </tr>
-
-                        </tbody>
-                    </table>
                 </div>
                 <div class="tab-pane fade" id="tabMedidas" role="tabpanel" aria-labelledby="profile-tab">
                     <h1>Calculadora de probabilidades binomiales</h1>
@@ -323,7 +334,6 @@
         </section>
     </div>
     <script>
-        debugger;
         window.myHtmlContent = document.getElementById("copyableContent").innerHTML;
     </script>
     <script id="vueScript" type="text/javascript">
@@ -343,7 +353,12 @@
                 selectedFileProbabilidad: null,
                 rango: null,
                 amplitudIntervalos: null,
-                grafico: {}
+                grafico: {},
+                tabBinomial: {  
+                    probabilidadExito: 0,
+                    numeroMuestra:0,
+                    numeroExitos: 0,
+                },
             },
             mounted: function () {
                 var input = document.getElementById("fileInput");
@@ -373,6 +388,15 @@
 
                     }
                     return suma / this.numeroRegistros;
+                },
+                probabilidadBinomial: function() {
+                    var probabilidadDeFallo = Math.abs(1 - this.tabBinomial.probabilidadExito);
+                    var probabilidadDeExito = this.tabBinomial.probabilidadExito;
+                    var ncr = math.combinations(this.tabBinomial.numeroMuestra, this.tabBinomial.numeroExitos);
+                    var diferencia = this.tabBinomial.numeroMuestra - this.tabBinomial.numeroExitos;
+                    var formula = ncr*Math.pow(probabilidadDeExito, this.tabBinomial.numeroExitos)*Math.pow(probabilidadDeFallo, diferencia);
+                   
+                    return formula;
                 }
             },
             methods: {
