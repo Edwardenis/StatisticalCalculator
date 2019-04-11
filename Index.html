@@ -37,8 +37,11 @@
                     #mainContainer {
                         padding: 10px;
                     }
-                    #tabProbabilidadBin .textResult {
+                    .textResult {
                         margin-top: 70px;
+                    }
+                    h1 > .form-row {
+                        margin-top:15px;
                     }
                 </style>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -209,19 +212,19 @@
                             <div class="row">
                                 <div class="col-6" >
                                     <div class="form-group">
-                                        <label for="inputExito">Probabilidad de exito:</label>
+                                        <label for="inputExito">Probabilidad de exito (P):</label>
                                         <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.probabilidadExito">
                                     </div>
                                 </div>
                                 <div class="col-6" >
                                     <div class="form-group">
-                                        <label for="inputExito">Tamaño de la muestra:</label>
+                                        <label for="inputExito">Tamaño de la muestra (n):</label>
                                         <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.numeroMuestra">
                                     </div>
                                 </div>
                                 <div class="col-6" >
                                     <div class="form-group">
-                                        <label for="inputExito">N&uacute;mero de exitos:</label>
+                                        <label for="inputExito">N&uacute;mero de exitos (k):</label>
                                         <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.numeroExitos">
                                     </div>
                                 </div>
@@ -237,33 +240,27 @@
 
                 </div>
                 <div class="tab-pane fade show active" id="tabProbabilidadPoi" role="tabpanel" aria-labelledby="profile-tab">
-                    <h1>Calculadora de probabilidades binomiales</h1>
+                    <h1>Calculadora de probabilidades de Poisson</h1>
                     <div class="form-row">
                         <div class="col-4" >
                             <div class="row">
                                 <div class="col-6" >
                                     <div class="form-group">
-                                        <label for="inputExito">Probabilidad de exito:</label>
-                                        <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.probabilidadExito">
+                                        <label for="inputExito">Media (&mu;):</label>
+                                        <input type="number" class="form-control" id="inputExito"  v-model="tabPoi.media">
                                     </div>
                                 </div>
                                 <div class="col-6" >
                                     <div class="form-group">
-                                        <label for="inputExito">Tamaño de la muestra:</label>
-                                        <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.numeroMuestra">
-                                    </div>
-                                </div>
-                                <div class="col-6" >
-                                    <div class="form-group">
-                                        <label for="inputExito">N&uacute;mero de exitos:</label>
-                                        <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.numeroExitos">
+                                        <label for="inputExito">N&uacute;mero de ocurrencias (x):</label>
+                                        <input type="number" class="form-control" id="inputExito"  v-model="tabPoi.numeroOcurrencia">
                                     </div>
                                 </div>
                             </div>
                             
                         </div>
                         <div class="col-8">
-                            <h2 class="textResult">P(x) = {{probabilidadBinomial}}</h2>
+                            <h2 class="textResult">P(x) = {{probabilidadPoisson}}</h2>
                         </div>
                         
                         
@@ -359,6 +356,10 @@
                     numeroMuestra:0,
                     numeroExitos: 0,
                 },
+                tabPoi: {
+                    media: 0,
+                    numeroOcurrencia:0,
+                }
             },
             mounted: function () {
                 var input = document.getElementById("fileInput");
@@ -396,6 +397,13 @@
                     var diferencia = this.tabBinomial.numeroMuestra - this.tabBinomial.numeroExitos;
                     var formula = ncr*Math.pow(probabilidadDeExito, this.tabBinomial.numeroExitos)*Math.pow(probabilidadDeFallo, diferencia);
                    
+                    return formula;
+                },
+                probabilidadPoisson: function() {
+                    var mediaAlaX = Math.pow(this.tabPoi.media, this.tabPoi.numeroOcurrencia);
+                    var eulerAlaMenosMedia = Math.pow(Math.E, this.tabPoi.media*-1);
+                    var xFactorial = math.permutations(this.tabPoi.numeroOcurrencia);
+                    var formula = (mediaAlaX*eulerAlaMenosMedia)/xFactorial;
                     return formula;
                 }
             },
