@@ -40,6 +40,9 @@
                     .textResult {
                         margin-top: 70px;
                     }
+                    .form-row {
+                        margin-bottom: 15px;
+                    }
                     h1 > .form-row {
                         margin-top:15px;
                     }
@@ -136,10 +139,10 @@
                             <button type="button" @click="generar" class="btn btn-primary">Generar</button>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col">
+                    <div class="row" v-show="media > 0">
+                        <div class="col" >
                             <h3>Medidas de Centralizaci&oacute;n</h3>
-                            <table class="fullborder" v-if="media > 0">
+                            <table class="fullborder" >
                                 <tbody>
                                     <tr>
                                         <th>N. de Datos: </th>
@@ -191,7 +194,25 @@
                                        
                                     </tbody>
                                 </table>
-                            </div>
+                        </div>
+                        <div class="col">
+                            <h3>Medidas de Forma</h3>
+                            <table class="fullborder" v-if="media > 0">
+                                <tbody>
+                                    <tr>
+                                        <th>Coeficiente de Asimetr&iacute;a (As): </th>
+                                        <td>{{asimetria}}</td>
+                                        <td>{{asimetriaInterpretacion}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Curtosis (G2): </th>
+                                        <td>{{curtosis}}</td>
+                                        <td>{{curtosisInterpretacion}}</td>
+                                    </tr>
+                                    
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     
                     <table class="table" style="margin-bottom: 10px;">
@@ -282,6 +303,14 @@
                                         <input type="number" class="form-control" id="inputExito"  v-model="tabBinomial.numeroExitos">
                                     </div>
                                 </div>
+                                <div class="col-6">
+                                    <label class="form-check-label" for="defaultCheck1">
+                                        Es combinada?
+                                    </label>
+                                    <br/>
+                                    <input v-model="tabBinomial.esCombinado" type="checkbox" value="" id="defaultCheck1">
+                                    
+                                </div>
                             </div>
                             
                         </div>
@@ -321,34 +350,48 @@
                     </div>
                 </div>
                 <div class="tab-pane fade" id="tabIntervalos" role="tabpanel" aria-labelledby="profile-tab">
-                    <h1>Calculadora de probabilidades binomiales</h1>
+                    <h1>Calculadora de Intervalos de Confianza</h1>
                     <div class="form-row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="fileInput2">Selecciona un archivo de excel</label>
-                                <input id="fileInput2" class="form-control-file" type="file" accept=".xlsx,.xls"
-                                    v-on:change="onInputProbabilidadChange" />
+                        <div class="col-6" >
+                            <div class="row">
+                                <div class="col-6" >
+                                    <div class="form-group">
+                                        <label for="InputMediaIntervalos">Tamaño de la muestra (n):</label>
+                                        <input type="number" class="form-control" id="InputMediaIntervalos"  v-model="tabIntervalos.n">
+                                    </div>
+                                </div>
+                                <div class="col-6" >
+                                    <div class="form-group">
+                                        <label for="InputMediaIntervalos">Media (&mu;):</label>
+                                        <input type="number" class="form-control" id="InputMediaIntervalos"  v-model="tabIntervalos.media">
+                                    </div>
+                                </div>
+                                <div class="col-6" >
+                                    <div class="form-group">
+                                        <label for="inputDesv">Desviaci&oacute;n Estandar (&#x1D6D4;):</label>
+                                        <input type="number" class="form-control" id="inputDesv"  v-model="tabIntervalos.desviacionEstandar">
+                                    </div>
+                                </div>
+                                <div class="col-6" >
+                                    <div class="form-group">
+                                        <label for="selectConfianza">Nivel de confianza (N.C):</label>
+                                        <select class="form-control" v-model="tabIntervalos.nivelConfianza" id="selectConfianza">
+                                            <option value="0.90">90%</option>
+                                            <option value="0.95">95%</option>
+                                            <option value="0.99">99%</option>
+                                          </select>
+                                        <!-- <input type="number" class="form-control" id="inputDesv"  v-model="tabIntervalos.nivelConfianza"> -->
+                                    </div>
+                                </div>
                             </div>
+                            
                         </div>
-                        <div class="col">
-                            <button type="button" @click="generarProbabilidad" class="btn btn-primary">Generar</button>
+                        <div class="col-6">
+                            <h2 class="textResult"> {{intervaloConfianza}}</h2>
                         </div>
+                        
+                        
                     </div>
-                    <table class="table">
-                        <thead>
-                            <th>X</th>
-                            <th>P(x)</th>
-                            <th>P(x) %</th>
-                        </thead>
-                        <tbody>
-                            <tr v-for="obj in tableProbabilidad">
-                                <td>{{obj.x}}</td>
-                                <td>{{obj.probabilidad}}</td>
-                                <td>{{(obj.probabilidad*100).toFixed(2)}} %</td>
-                            </tr>
-
-                        </tbody>
-                    </table>
                 </div>
             </div>
 
@@ -358,7 +401,7 @@
         window.myHtmlContent = document.getElementById("copyableContent").innerHTML;
     </script>
     <script id="vueScript" type="text/javascript">
-
+        
         var app = new Vue({
             el: '#mainContainer',
             data: {
@@ -381,11 +424,18 @@
                     probabilidadExito: 0,
                     numeroMuestra:0,
                     numeroExitos: 0,
+                    esCombinado: false
                 },
                 tabPoi: {
                     media: 0,
                     numeroOcurrencia:0,
                 },
+                tabIntervalos: {
+                    media: 0,
+                    desviacionEstandar: 0,
+                    n:0,
+                    nivelConfianza: 0
+                }
             },
             watch: {
                 selectedRadio: function (val) {
@@ -408,13 +458,16 @@
                     return suma / this.numeroRegistros;
                 },
                 probabilidadBinomial: function() {
-                    var probabilidadDeFallo = Math.abs(1 - this.tabBinomial.probabilidadExito);
-                    var probabilidadDeExito = this.tabBinomial.probabilidadExito;
-                    var ncr = math.combinations(this.tabBinomial.numeroMuestra, this.tabBinomial.numeroExitos);
-                    var diferencia = this.tabBinomial.numeroMuestra - this.tabBinomial.numeroExitos;
-                    var formula = ncr*Math.pow(probabilidadDeExito, this.tabBinomial.numeroExitos)*Math.pow(probabilidadDeFallo, diferencia);
-                   
-                    return formula;
+                    var suma = 0;
+                    if (this.tabBinomial.esCombinado) {
+                        for(var i = this.tabBinomial.numeroExitos; i >= 0; i--) {
+                            var x = this.probabilidadBinomialCalculator(i);
+                            suma += x;
+                        }
+                    } else {
+                        return this.probabilidadBinomialCalculator(this.tabBinomial.numeroExitos);
+                    }
+                    return suma;
                 },
                 probabilidadPoisson: function() {
                     var mediaAlaX = Math.pow(this.tabPoi.media, this.tabPoi.numeroOcurrencia);
@@ -439,8 +492,11 @@
                         medianaSimple =  (this.numeroRegistros +1) / 2;
                     }
 
-                    if (this.isDatosNoAgrupados) 
-                        return medianaSimple;
+                    if (this.isDatosNoAgrupados)  {
+                        var claseMediana = this.tableObject[medianaSimple-1];
+                        return claseMediana.clase;
+
+                    }
 
                     var claseObject = this.tableObject.filter((value, index, array) => {
                         //si es el ultimo elemento
@@ -455,8 +511,8 @@
                     var frecuencaAcumuladaAnterior = claseObjAnterior ? claseObjAnterior.frecuenciaAbsAcomu : 0;
                     var amplitudClase = claseObject.limSup - claseObject.limInf;
                     var formula = claseObject.limInf + ((medianaSimple-frecuencaAcumuladaAnterior)/claseObject.frecuenciaAbs)*amplitudClase;
-
-                    return formula;
+                    var claseMediana = this.tableObject[formula-1];
+                    return claseMediana.marcaClase;
                 },
                 moda: function() {
                     if (this.numeroRegistros == 0)
@@ -468,9 +524,9 @@
                     
                     var claseMayorFrecuencia = arrayDescentende[0];
                     if (this.isDatosNoAgrupados) {
-                        var clasesModa = arrayDescentende.filter((x) => x.frecuenciaAbs == claseMayorFrecuencia.frecuenciaAbs);
-                        var modaCompose = clasesModa.map((x) => x.clase).join(",");
-                        return modaCompose;
+                        // var clasesModa = arrayDescentende.filter((x) => x.frecuenciaAbs == claseMayorFrecuencia.frecuenciaAbs);
+                        // var modaCompose = clasesModa.map((x) => x.clase).join(",");
+                        return claseMayorFrecuencia.clase;
                     }                    
                     var index = this.tableObject.indexOf(claseMayorFrecuencia);
                     var claseAnterior = this.tableObject[index - 1];
@@ -509,6 +565,79 @@
                 },
                 coeficienteVariacion: function() {
                     return this.desviacionEstandar / Math.abs(this.media);
+                },
+                asimetria: function() {
+                    return (this.media - this.moda)/this.desviacionEstandar;
+                },
+                asimetriaInterpretacion: function() {
+                    if (this.asimetria == 0) {
+                        return "La distribución es simétrica";
+                    } else if (this.asimetria > 0) {
+                        return "La distribución es asimétrica a la derecha";
+                    } else {
+                        return "La distribución es asimétrica a la izquierda";
+                    }
+                },
+                curtosis: function() {
+                    if (this.numeroRegistros == 0)
+                        return 0;
+                    
+                    var sumatoria = 0;
+                    this.tableObject.forEach((claseObj) => {
+                        var x = 0;
+                        if (this.isDatosNoAgrupados)
+                            x = claseObj.clase;
+                        else
+                            x = claseObj.marcaClase;
+                        
+                        var diff = x - this.media;
+                        sumatoria += Math.pow(diff,4) * claseObj.frecuenciaAbs;
+                    });
+
+                    var formula = (sumatoria/(this.numeroRegistros*Math.pow(this.desviacionEstandar,4))) - 3;
+                    return formula;
+                },
+                curtosisInterpretacion: function() {
+                    if (this.curtosis == 0) {
+                        return "La curva es mesocúrtica";
+                    } else if (this.curtosis > 0) {
+                        return "La curva es leptocúrtica";
+                    } else {
+                        return "La curva es platicúrtica";
+                    }
+                },
+                nivelSignificancia: function() {
+                    return Math.abs(1 - this.tabIntervalos.nivelConfianza);
+                },
+                intervaloConfianza: function() {
+                    console.log("Tabla de Z")
+                    console.log(tablaZ);
+                    var valorABuscar = this.tabIntervalos.nivelConfianza / 2;
+                    valorABuscar = valorABuscar.toFixed(4);
+                    var miZ = 0;
+                    if (tablaZ) {
+
+                        for(var i = 0.0; i <= 3.0; i +=0.1) {
+                            var fixedI = i > 0 ? i.toFixed(1) : i;
+                            var fila = tablaZ[fixedI];
+                            for(var j = 0.00; j <= 0.09; j += 0.01) {
+                                var fixedJ = j > 0 ? j.toFixed(2) : j;
+                                
+                                if (valorABuscar[2] == fila[fixedJ][2]
+                                    && valorABuscar[3] == fila[fixedJ][3]
+                                    && valorABuscar[4] == fila[fixedJ][4]) {
+                                    var z = fixedI + fixedJ[3];
+                                    miZ = z;
+                                }
+                            }
+                        }
+                    }
+                    
+                    var zPorErrorMuestral = (+miZ) * (this.tabIntervalos.desviacionEstandar/Math.sqrt(this.tabIntervalos.n));
+                    var int1 = (+this.tabIntervalos.media) - zPorErrorMuestral;
+                    var int2 = (+this.tabIntervalos.media) + zPorErrorMuestral;
+                    var intervalo = "("+int1.toFixed(2)+", "+int2.toFixed(2)+")";
+                    return intervalo;
                 }
             },
             mounted: function () {
@@ -521,6 +650,18 @@
                 this.tableProbabilidad = [];
             },
             methods: {
+                probabilidadBinomialCalculator: function(k) {
+                    var probabilidadDeExito = this.tabBinomial.probabilidadExito;
+                    var probabilidadDeFallo = Math.abs(1 - probabilidadDeExito);
+                    var ncr = math.combinations(this.tabBinomial.numeroMuestra, k);
+                    var diferencia = this.tabBinomial.numeroMuestra - k;
+                    var formula = ncr*Math.pow(probabilidadDeExito, k)*Math.pow(probabilidadDeFallo, diferencia);
+                   
+                    return formula;
+                },
+                zScore: function(value) {
+                    return (value - this.tabIntervalos.media) / this.tabIntervalos.desviacionEstandar;
+                },
                 generarProbabilidad: function (evt) {
                     evt.preventDefault();
                     if (!this.selectedFileProbabilidad)
@@ -793,6 +934,380 @@
                 }
             }
         });
+
+        var tablaZ = [];
+        tablaZ["0"]= [];
+        tablaZ["0"]["0"]= "0.0000";
+        tablaZ["0"]["0.01"]= "0.0040";
+        tablaZ["0"]["0.02"]= "0.0080";
+        tablaZ["0"]["0.03"]= "0.0120";
+        tablaZ["0"]["0.04"]= "0.0160";
+        tablaZ["0"]["0.05"]= "0.0199";
+        tablaZ["0"]["0.06"]= "0.0239";
+        tablaZ["0"]["0.07"]= "0.0279";
+        tablaZ["0"]["0.08"]= "0.0319";
+        tablaZ["0"]["0.09"]= "0.0359";
+        //
+        tablaZ["0.1"]= [];
+        tablaZ["0.1"]["0"]= "0.0398";
+        tablaZ["0.1"]["0.01"]= "0.0438";
+        tablaZ["0.1"]["0.02"]= "0.0478";
+        tablaZ["0.1"]["0.03"]= "0.0517";
+        tablaZ["0.1"]["0.04"]= "0.0557";
+        tablaZ["0.1"]["0.05"]= "0.0596";
+        tablaZ["0.1"]["0.06"]= "0.0636";
+        tablaZ["0.1"]["0.07"]= "0.0675";
+        tablaZ["0.1"]["0.08"]= "0.0714";
+        tablaZ["0.1"]["0.09"]= "0.0753";
+        //
+        tablaZ["0.2"]= [];
+        tablaZ["0.2"]["0"]= "0.0793";
+        tablaZ["0.2"]["0.01"]= "0.0832";
+        tablaZ["0.2"]["0.02"]= "0.0871";
+        tablaZ["0.2"]["0.03"]= "0.0910";
+        tablaZ["0.2"]["0.04"]= "0.0948";
+        tablaZ["0.2"]["0.05"]= "0.0987";
+        tablaZ["0.2"]["0.06"]= "0.1026";
+        tablaZ["0.2"]["0.07"]= "0.1064";
+        tablaZ["0.2"]["0.08"]= "0.1103";
+        tablaZ["0.2"]["0.09"]= "0.1141";
+        //
+        tablaZ["0.3"]= [];
+        tablaZ["0.3"]["0"]= "0.1179";
+        tablaZ["0.3"]["0.01"]= "0.1217";
+        tablaZ["0.3"]["0.02"]= "0.1255";
+        tablaZ["0.3"]["0.03"]= "0.1293";
+        tablaZ["0.3"]["0.04"]= "0.1331";
+        tablaZ["0.3"]["0.05"]= "0.1368";
+        tablaZ["0.3"]["0.06"]= "0.1406";
+        tablaZ["0.3"]["0.07"]= "0.1443";
+        tablaZ["0.3"]["0.08"]= "0.1480";
+        tablaZ["0.3"]["0.09"]= "0.1517";
+        //
+        tablaZ["0.4"]= [];
+        tablaZ["0.4"]["0"]= "0.1554";
+        tablaZ["0.4"]["0.01"]= "0.1591";
+        tablaZ["0.4"]["0.02"]= "0.1628";
+        tablaZ["0.4"]["0.03"]= "0.1664";
+        tablaZ["0.4"]["0.04"]= "0.1700";
+        tablaZ["0.4"]["0.05"]= "0.1736";
+        tablaZ["0.4"]["0.06"]= "0.1772";
+        tablaZ["0.4"]["0.07"]= "0.1808";
+        tablaZ["0.4"]["0.08"]= "0.1844";
+        tablaZ["0.4"]["0.09"]= "0.1879";
+        //
+        tablaZ["0.5"]= [];
+        tablaZ["0.5"]["0"]= "0.1915";
+        tablaZ["0.5"]["0.01"]= "0.1950";
+        tablaZ["0.5"]["0.02"]= "0.1985";
+        tablaZ["0.5"]["0.03"]= "0.2019";
+        tablaZ["0.5"]["0.04"]= "0.2054";
+        tablaZ["0.5"]["0.05"]= "0.2088";
+        tablaZ["0.5"]["0.06"]= "0.2123";
+        tablaZ["0.5"]["0.07"]= "0.2157";
+        tablaZ["0.5"]["0.08"]= "0.2190";
+        tablaZ["0.5"]["0.09"]= "0.2224";
+        //
+        tablaZ["0.6"]= [];
+        tablaZ["0.6"]["0"]= "0.2257";
+        tablaZ["0.6"]["0.01"]= "0.2291";
+        tablaZ["0.6"]["0.02"]= "0.2324";
+        tablaZ["0.6"]["0.03"]= "0.2357";
+        tablaZ["0.6"]["0.04"]= "0.2389";
+        tablaZ["0.6"]["0.05"]= "0.2422";
+        tablaZ["0.6"]["0.06"]= "0.2454";
+        tablaZ["0.6"]["0.07"]= "0.2486";
+        tablaZ["0.6"]["0.08"]= "0.2517";
+        tablaZ["0.6"]["0.09"]= "0.2549";
+        //
+        tablaZ["0.7"]= [];
+        tablaZ["0.7"]["0"]= "0.2580";
+        tablaZ["0.7"]["0.01"]= "0.2611";
+        tablaZ["0.7"]["0.02"]= "0.2642";
+        tablaZ["0.7"]["0.03"]= "0.2673";
+        tablaZ["0.7"]["0.04"]= "0.2704";
+        tablaZ["0.7"]["0.05"]= "0.2734";
+        tablaZ["0.7"]["0.06"]= "0.2764";
+        tablaZ["0.7"]["0.07"]= "0.2794";
+        tablaZ["0.7"]["0.08"]= "0.2823";
+        tablaZ["0.7"]["0.09"]= "0.2852";
+        //
+        tablaZ["0.8"]= [];
+        tablaZ["0.8"]["0"]= "0.2881";
+        tablaZ["0.8"]["0.01"]= "0.2910";
+        tablaZ["0.8"]["0.02"]= "0.2939";
+        tablaZ["0.8"]["0.03"]= "0.2967";
+        tablaZ["0.8"]["0.04"]= "0.2995";
+        tablaZ["0.8"]["0.05"]= "0.3023";
+        tablaZ["0.8"]["0.06"]= "0.3051";
+        tablaZ["0.8"]["0.07"]= "0.3078";
+        tablaZ["0.8"]["0.08"]= "0.3106";
+        tablaZ["0.8"]["0.09"]= "0.3133";
+        //
+        tablaZ["0.9"]= [];
+        tablaZ["0.9"]["0"]= "0.3159";
+        tablaZ["0.9"]["0.01"]= "0.3186";
+        tablaZ["0.9"]["0.02"]= "0.3212";
+        tablaZ["0.9"]["0.03"]= "0.3238";
+        tablaZ["0.9"]["0.04"]= "0.3264";
+        tablaZ["0.9"]["0.05"]= "0.3289";
+        tablaZ["0.9"]["0.06"]= "0.3315";
+        tablaZ["0.9"]["0.07"]= "0.3340";
+        tablaZ["0.9"]["0.08"]= "0.3365";
+        tablaZ["0.9"]["0.09"]= "0.3389";
+        //
+        tablaZ["1.0"]= [];
+        tablaZ["1.0"]["0"]= "0.3413";
+        tablaZ["1.0"]["0.01"]= "0.3438";
+        tablaZ["1.0"]["0.02"]= "0.3461";
+        tablaZ["1.0"]["0.03"]= "0.3485";
+        tablaZ["1.0"]["0.04"]= "0.3508";
+        tablaZ["1.0"]["0.05"]= "0.3531";
+        tablaZ["1.0"]["0.06"]= "0.3554";
+        tablaZ["1.0"]["0.07"]= "0.3577";
+        tablaZ["1.0"]["0.08"]= "0.3599";
+        tablaZ["1.0"]["0.09"]= "0.3621";
+        //
+        tablaZ["1.1"]= [];
+        tablaZ["1.1"]["0"]= "0.3643";
+        tablaZ["1.1"]["0.01"]= "0.3665";
+        tablaZ["1.1"]["0.02"]= "0.3686";
+        tablaZ["1.1"]["0.03"]= "0.3708";
+        tablaZ["1.1"]["0.04"]= "0.3729";
+        tablaZ["1.1"]["0.05"]= "0.3749";
+        tablaZ["1.1"]["0.06"]= "0.3770";
+        tablaZ["1.1"]["0.07"]= "0.3790";
+        tablaZ["1.1"]["0.08"]= "0.3810";
+        tablaZ["1.1"]["0.09"]= "0.3830";
+        //
+        tablaZ["1.2"]= [];
+        tablaZ["1.2"]["0"]= "0.3849";
+        tablaZ["1.2"]["0.01"]= "0.3869";
+        tablaZ["1.2"]["0.02"]= "0.3888";
+        tablaZ["1.2"]["0.03"]= "0.3907";
+        tablaZ["1.2"]["0.04"]= "0.3925";
+        tablaZ["1.2"]["0.05"]= "0.3944";
+        tablaZ["1.2"]["0.06"]= "0.3962";
+        tablaZ["1.2"]["0.07"]= "0.3980";
+        tablaZ["1.2"]["0.08"]= "0.3997";
+        tablaZ["1.2"]["0.09"]= "0.4015";
+        //
+        tablaZ["1.3"]= [];
+        tablaZ["1.3"]["0"]= "0.4032";
+        tablaZ["1.3"]["0.01"]= "0.4049";
+        tablaZ["1.3"]["0.02"]= "0.4066";
+        tablaZ["1.3"]["0.03"]= "0.4082";
+        tablaZ["1.3"]["0.04"]= "0.4099";
+        tablaZ["1.3"]["0.05"]= "0.4115";
+        tablaZ["1.3"]["0.06"]= "0.4131";
+        tablaZ["1.3"]["0.07"]= "0.4147";
+        tablaZ["1.3"]["0.08"]= "0.4162";
+        tablaZ["1.3"]["0.09"]= "0.4177";
+        //
+        tablaZ["1.4"]= [];
+        tablaZ["1.4"]["0"]= "0.4192";
+        tablaZ["1.4"]["0.01"]= "0.4207";
+        tablaZ["1.4"]["0.02"]= "0.4222";
+        tablaZ["1.4"]["0.03"]= "0.4236";
+        tablaZ["1.4"]["0.04"]= "0.4251";
+        tablaZ["1.4"]["0.05"]= "0.4265";
+        tablaZ["1.4"]["0.06"]= "0.4279";
+        tablaZ["1.4"]["0.07"]= "0.4292";
+        tablaZ["1.4"]["0.08"]= "0.4306";
+        tablaZ["1.4"]["0.09"]= "0.4319";
+        //
+        tablaZ["1.5"]= [];
+        tablaZ["1.5"]["0"]= "0.4332";
+        tablaZ["1.5"]["0.01"]= "0.4345";
+        tablaZ["1.5"]["0.02"]= "0.4357";
+        tablaZ["1.5"]["0.03"]= "0.4370";
+        tablaZ["1.5"]["0.04"]= "0.4382";
+        tablaZ["1.5"]["0.05"]= "0.4394";
+        tablaZ["1.5"]["0.06"]= "0.4406";
+        tablaZ["1.5"]["0.07"]= "0.4418";
+        tablaZ["1.5"]["0.08"]= "0.4429";
+        tablaZ["1.5"]["0.09"]= "0.4441";
+        //
+        tablaZ["1.6"]= [];
+        tablaZ["1.6"]["0"]= "0.4452";
+        tablaZ["1.6"]["0.01"]= "0.4463";
+        tablaZ["1.6"]["0.02"]= "0.4474";
+        tablaZ["1.6"]["0.03"]= "0.4484";
+        tablaZ["1.6"]["0.04"]= "0.4495";
+        tablaZ["1.6"]["0.05"]= "0.4505";
+        tablaZ["1.6"]["0.06"]= "0.4515";
+        tablaZ["1.6"]["0.07"]= "0.4525";
+        tablaZ["1.6"]["0.08"]= "0.4535";
+        tablaZ["1.6"]["0.09"]= "0.4545";
+        //
+        tablaZ["1.7"]= [];
+        tablaZ["1.7"]["0"]= "0.4554";
+        tablaZ["1.7"]["0.01"]= "0.4564";
+        tablaZ["1.7"]["0.02"]= "0.4573";
+        tablaZ["1.7"]["0.03"]= "0.4582";
+        tablaZ["1.7"]["0.04"]= "0.4591";
+        tablaZ["1.7"]["0.05"]= "0.4599";
+        tablaZ["1.7"]["0.06"]= "0.4608";
+        tablaZ["1.7"]["0.07"]= "0.4616";
+        tablaZ["1.7"]["0.08"]= "0.4625";
+        tablaZ["1.7"]["0.09"]= "0.4633";
+        //
+        tablaZ["1.8"]= [];
+        tablaZ["1.8"]["0"]= "0.4641";
+        tablaZ["1.8"]["0.01"]= "0.4649";
+        tablaZ["1.8"]["0.02"]= "0.4656";
+        tablaZ["1.8"]["0.03"]= "0.4664";
+        tablaZ["1.8"]["0.04"]= "0.4671";
+        tablaZ["1.8"]["0.05"]= "0.4678";
+        tablaZ["1.8"]["0.06"]= "0.4686";
+        tablaZ["1.8"]["0.07"]= "0.4693";
+        tablaZ["1.8"]["0.08"]= "0.4699";
+        tablaZ["1.8"]["0.09"]= "0.4706";
+        //
+        tablaZ["1.9"]= [];
+        tablaZ["1.9"]["0"]= "0.4713";
+        tablaZ["1.9"]["0.01"]= "0.4719";
+        tablaZ["1.9"]["0.02"]= "0.4726";
+        tablaZ["1.9"]["0.03"]= "0.4732";
+        tablaZ["1.9"]["0.04"]= "0.4738";
+        tablaZ["1.9"]["0.05"]= "0.4744";
+        tablaZ["1.9"]["0.06"]= "0.4750";
+        tablaZ["1.9"]["0.07"]= "0.4756";
+        tablaZ["1.9"]["0.08"]= "0.4761";
+        tablaZ["1.9"]["0.09"]= "0.4767";
+        //
+        tablaZ["2.0"]= [];
+        tablaZ["2.0"]["0"]= "0.4772";
+        tablaZ["2.0"]["0.01"]= "0.4778";
+        tablaZ["2.0"]["0.02"]= "0.4783";
+        tablaZ["2.0"]["0.03"]= "0.4788";
+        tablaZ["2.0"]["0.04"]= "0.4793";
+        tablaZ["2.0"]["0.05"]= "0.4798";
+        tablaZ["2.0"]["0.06"]= "0.4803";
+        tablaZ["2.0"]["0.07"]= "0.4808";
+        tablaZ["2.0"]["0.08"]= "0.4812";
+        tablaZ["2.0"]["0.09"]= "0.4817";
+        //
+        tablaZ["2.1"]= [];
+        tablaZ["2.1"]["0"]= "0.4821";
+        tablaZ["2.1"]["0.01"]= "0.4826";
+        tablaZ["2.1"]["0.02"]= "0.4830";
+        tablaZ["2.1"]["0.03"]= "0.4834";
+        tablaZ["2.1"]["0.04"]= "0.4838";
+        tablaZ["2.1"]["0.05"]= "0.4842";
+        tablaZ["2.1"]["0.06"]= "0.4846";
+        tablaZ["2.1"]["0.07"]= "0.4850";
+        tablaZ["2.1"]["0.08"]= "0.4854";
+        tablaZ["2.1"]["0.09"]= "0.4857";
+        //
+        tablaZ["2.2"]= [];
+        tablaZ["2.2"]["0"]= "0.4861";
+        tablaZ["2.2"]["0.01"]= "0.4864";
+        tablaZ["2.2"]["0.02"]= "0.4868";
+        tablaZ["2.2"]["0.03"]= "0.4871";
+        tablaZ["2.2"]["0.04"]= "0.4875";
+        tablaZ["2.2"]["0.05"]= "0.4878";
+        tablaZ["2.2"]["0.06"]= "0.4881";
+        tablaZ["2.2"]["0.07"]= "0.4884";
+        tablaZ["2.2"]["0.08"]= "0.4887";
+        tablaZ["2.2"]["0.09"]= "0.4890";
+        //
+        tablaZ["2.3"]= [];
+        tablaZ["2.3"]["0"]= "0.4893";
+        tablaZ["2.3"]["0.01"]= "0.4896";
+        tablaZ["2.3"]["0.02"]= "0.4898";
+        tablaZ["2.3"]["0.03"]= "0.4901";
+        tablaZ["2.3"]["0.04"]= "0.4904";
+        tablaZ["2.3"]["0.05"]= "0.4906";
+        tablaZ["2.3"]["0.06"]= "0.4909";
+        tablaZ["2.3"]["0.07"]= "0.4911";
+        tablaZ["2.3"]["0.08"]= "0.4913";
+        tablaZ["2.3"]["0.09"]= "0.4916";
+        //
+        tablaZ["2.4"]= [];
+        tablaZ["2.4"]["0"]= "0.4918";
+        tablaZ["2.4"]["0.01"]= "0.4920";
+        tablaZ["2.4"]["0.02"]= "0.4922";
+        tablaZ["2.4"]["0.03"]= "0.4925";
+        tablaZ["2.4"]["0.04"]= "0.4927";
+        tablaZ["2.4"]["0.05"]= "0.4929";
+        tablaZ["2.4"]["0.06"]= "0.4931";
+        tablaZ["2.4"]["0.07"]= "0.4932";
+        tablaZ["2.4"]["0.08"]= "0.4934";
+        tablaZ["2.4"]["0.09"]= "0.4936";
+        //
+        tablaZ["2.5"]= [];
+        tablaZ["2.5"]["0"]= "0.4938";
+        tablaZ["2.5"]["0.01"]= "0.4940";
+        tablaZ["2.5"]["0.02"]= "0.4941";
+        tablaZ["2.5"]["0.03"]= "0.4943";
+        tablaZ["2.5"]["0.04"]= "0.4945";
+        tablaZ["2.5"]["0.05"]= "0.4946";
+        tablaZ["2.5"]["0.06"]= "0.4948";
+        tablaZ["2.5"]["0.07"]= "0.4949";
+        tablaZ["2.5"]["0.08"]= "0.4951";
+        tablaZ["2.5"]["0.09"]= "0.4952";
+        //
+        tablaZ["2.6"]= [];
+        tablaZ["2.6"]["0"]= "0.4953";
+        tablaZ["2.6"]["0.01"]= "0.4955";
+        tablaZ["2.6"]["0.02"]= "0.4956";
+        tablaZ["2.6"]["0.03"]= "0.4957";
+        tablaZ["2.6"]["0.04"]= "0.4959";
+        tablaZ["2.6"]["0.05"]= "0.4960";
+        tablaZ["2.6"]["0.06"]= "0.4961";
+        tablaZ["2.6"]["0.07"]= "0.4962";
+        tablaZ["2.6"]["0.08"]= "0.4963";
+        tablaZ["2.6"]["0.09"]= "0.4964";
+        //
+        tablaZ["2.7"]= [];
+        tablaZ["2.7"]["0"]= "0.4965";
+        tablaZ["2.7"]["0.01"]= "0.4966";
+        tablaZ["2.7"]["0.02"]= "0.4967";
+        tablaZ["2.7"]["0.03"]= "0.4968";
+        tablaZ["2.7"]["0.04"]= "0.4969";
+        tablaZ["2.7"]["0.05"]= "0.4970";
+        tablaZ["2.7"]["0.06"]= "0.4971";
+        tablaZ["2.7"]["0.07"]= "0.4972";
+        tablaZ["2.7"]["0.08"]= "0.4973";
+        tablaZ["2.7"]["0.09"]= "0.4974";
+        //
+        tablaZ["2.8"]= [];
+        tablaZ["2.8"]["0"]= "0.4974";
+        tablaZ["2.8"]["0.01"]= "0.4975";
+        tablaZ["2.8"]["0.02"]= "0.4976";
+        tablaZ["2.8"]["0.03"]= "0.4977";
+        tablaZ["2.8"]["0.04"]= "0.4977";
+        tablaZ["2.8"]["0.05"]= "0.4978";
+        tablaZ["2.8"]["0.06"]= "0.4979";
+        tablaZ["2.8"]["0.07"]= "0.4979";
+        tablaZ["2.8"]["0.08"]= "0.4980";
+        tablaZ["2.8"]["0.09"]= "0.4981";
+        //
+        tablaZ["2.9"]= [];
+        tablaZ["2.9"]["0"]= "0.4981";
+        tablaZ["2.9"]["0.01"]= "0.4982";
+        tablaZ["2.9"]["0.02"]= "0.4982";
+        tablaZ["2.9"]["0.03"]= "0.4983";
+        tablaZ["2.9"]["0.04"]= "0.4984";
+        tablaZ["2.9"]["0.05"]= "0.4984";
+        tablaZ["2.9"]["0.06"]= "0.4985";
+        tablaZ["2.9"]["0.07"]= "0.4985";
+        tablaZ["2.9"]["0.08"]= "0.4986";
+        tablaZ["2.9"]["0.09"]= "0.4986";
+        //
+        tablaZ["3.0"]= [];
+        tablaZ["3.0"]["0"]= "0.4987";
+        tablaZ["3.0"]["0.01"]= "0.4987";
+        tablaZ["3.0"]["0.02"]= "0.4987";
+        tablaZ["3.0"]["0.03"]= "0.4988";
+        tablaZ["3.0"]["0.04"]= "0.4988";
+        tablaZ["3.0"]["0.05"]= "0.4989";
+        tablaZ["3.0"]["0.06"]= "0.4989";
+        tablaZ["3.0"]["0.07"]= "0.4989";
+        tablaZ["3.0"]["0.08"]= "0.4990";
+        tablaZ["3.0"]["0.09"]= "0.4990";
+
     </script>
 
 
